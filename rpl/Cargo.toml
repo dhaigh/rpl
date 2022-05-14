@@ -1,0 +1,13 @@
+[package]
+name = "rpl"
+version = "0.1.0"
+edition = "2021"
+description = "APL-inspired nonsense in Rust"
+repository = ""
+license = ""
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"

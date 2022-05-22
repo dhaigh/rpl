@@ -1,10 +1,8 @@
+mod parser;
 mod scanner;
-use scanner::Scanner;
+use parser::parse;
 
 pub fn main() {
-    let mut s = Scanner::new("12 × 3 + 1");
-    s.tokenize();
-    for t in s.tokens {
-        println!("{}", t);
-    }
+    let tree = parse("12 × 3 + 1");
+    println!("{}", tree);
 }

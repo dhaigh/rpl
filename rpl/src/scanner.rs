@@ -1,6 +1,17 @@
 use std::fmt;
 use unicode_segmentation::UnicodeSegmentation;
 
+fn is_number(string: &str) -> bool {
+    if string.len() > 1 {
+        return false;
+    }
+
+    return match string.chars().next() {
+        Some(c) => '0' <= c && c <= '9',
+        _ => false,
+    };
+}
+
 pub enum Token {
     Number(i32),
     Plus,
@@ -23,17 +34,6 @@ pub struct Scanner<'a> {
     pub tokens: Vec<Token>,
 }
 
-fn is_number(string: &str) -> bool {
-    if string.len() > 1 {
-        return false;
-    }
-
-    return match string.chars().next() {
-        Some(c) => '0' <= c && c <= '9',
-        _ => false,
-    };
-}
-
 impl<'a> Scanner<'a> {
     pub fn new(source: &'a str) -> Self {
         let tokens: Vec<Token> = vec![];
@@ -46,7 +46,7 @@ impl<'a> Scanner<'a> {
     }
 
     pub fn tokenize(&mut self) {
-        while let Some(c) = self.next_grapheme() {
+        while let Some(c) = self.current_grapheme() {
             if is_number(c) {
                 self.consume_number();
             } else {
@@ -54,8 +54,11 @@ impl<'a> Scanner<'a> {
                     &"+" => self.tokens.push(Token::Plus),
                     &"×" => self.tokens.push(Token::Times),
                     &" " => {}
-                    _ => {}
+                    _ => {
+                        println!("unknown character `{}`", c);
+                    }
                 }
+                self.advance();
             }
         }
     }
@@ -64,10 +67,11 @@ impl<'a> Scanner<'a> {
         let start = self.index;
 
         while let Some(g) = self.current_grapheme() {
-            if !is_number(g) {
+            if is_number(g) {
+                self.advance();
+            } else {
                 break;
             }
-            self.index += 1;
         }
 
         let mut s = String::with_capacity(self.index - start);
@@ -76,7 +80,10 @@ impl<'a> Scanner<'a> {
         }
 
         match s.parse::<i32>() {
-            Ok(n) => self.tokens.push(Token::Number(n)),
+            Ok(n) => {
+                let num = Token::Number(n);
+                self.tokens.push(num);
+            }
             Err(e) => {
                 println!("{}", e);
             }
@@ -87,8 +94,9 @@ impl<'a> Scanner<'a> {
         self.graphemes.get(self.index)
     }
 
-    fn next_grapheme(&mut self) -> Option<&&str> {
+    fn advance(&mut self) -> Option<&&str> {
+        let grapheme = self.graphemes.get(self.index);
         self.index += 1;
-        self.current_grapheme()
+        grapheme
     }
 }

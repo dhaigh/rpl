@@ -1,5 +1,5 @@
 use wasm_bindgen::prelude::*;
-mod scanner;
+// mod scanner;
 
 #[wasm_bindgen]
 pub fn evaluate(_source: &str) -> Vec<i32> {

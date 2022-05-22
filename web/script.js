@@ -1,5 +1,5 @@
-import init, { gday } from "./pkg/rpl.js";
+import init, { tokenize } from "./pkg/rpl.js";
 
 init().then(() => {
-    console.log(gday("world"));
+    console.log(tokenize("world"));
 });

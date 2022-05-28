@@ -1,5 +1,5 @@
-use crate::parser::Expr;
-use crate::scanner::Op;
+use super::parser::{Expr, Parser};
+use super::scanner::{Op, Scanner};
 
 enum Tack {
     Left,
@@ -69,12 +69,12 @@ fn replicate(_left: Vec<i32>, _right: Vec<i32>) -> Vec<i32> {
     return vec![];
 }
 
-pub fn interpret(expr: Expr) -> Vec<i32> {
+pub fn eval(expr: Expr) -> Vec<i32> {
     match expr {
         Expr::Number(value) => value,
         Expr::Diadic { left, infix, right } => {
-            let l = interpret(*left);
-            let r = interpret(*right);
+            let l = eval(*left);
+            let r = eval(*right);
 
             if r.len() == 0 {
                 panic!("no right");
@@ -92,5 +92,20 @@ pub fn interpret(expr: Expr) -> Vec<i32> {
                 Op::Replicate => replicate(l, r),
             }
         }
+    }
+}
+
+pub fn eval_source(source: &str) -> Result<Vec<i32>, &'static str> {
+    let mut scanner = Scanner::new(source);
+    scanner.tokenize();
+
+    let parser = Parser::new(scanner.tokens);
+
+    match parser.parse() {
+        Ok(tree) => {
+            println!("> {}", tree);
+            Ok(eval(tree))
+        }
+        Err(e) => Err(e),
     }
 }

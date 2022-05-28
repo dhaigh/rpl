@@ -1,4 +1,4 @@
-use crate::scanner::{Op, Token};
+use super::scanner::{Op, Token};
 use std::fmt;
 
 pub enum Expr<'a> {
@@ -62,7 +62,7 @@ impl Parser {
                     },
                     Err(e) => Err(e),
                 },
-                Token::Number(_) => Err("expected infix operator, saw number"),
+                Token::Number(_) => Err("unexpected number"),
                 Token::LeftParen => self.p(index),
                 Token::RightParen => {
                     return expr;

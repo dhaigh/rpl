@@ -1,22 +1,11 @@
 mod interpreter;
-mod parser;
-mod scanner;
-use interpreter::interpret;
-use parser::Parser;
-use scanner::Scanner;
+
+use interpreter::interp::eval_source;
 
 pub fn main() {
     let source = "(3 4  9 ⊣ 0) ⌈ 10 3 2 ";
-
-    let mut scanner = Scanner::new(source);
-    scanner.tokenize();
-
-    let parser = Parser::new(scanner.tokens);
-
-    match parser.parse() {
-        Ok(tree) => {
-            println!("> {}", tree);
-            let result = interpret(tree);
+    match eval_source(source) {
+        Ok(result) => {
             println!("{:?}", result)
         }
         Err(e) => {

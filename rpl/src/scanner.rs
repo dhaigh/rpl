@@ -20,6 +20,7 @@ pub enum Op {
     Plus,
     Minus,
     Times,
+    Divide,
 }
 
 impl fmt::Display for Op {
@@ -28,6 +29,7 @@ impl fmt::Display for Op {
             Op::Plus => write!(f, "+"),
             Op::Minus => write!(f, "+"),
             Op::Times => write!(f, "×"),
+            Op::Divide => write!(f, "÷"),
         }
     }
 }
@@ -72,6 +74,7 @@ impl<'a> Scanner<'a> {
                     &"+" => self.tokens.push(Token::Operator(Op::Plus)),
                     &"-" => self.tokens.push(Token::Operator(Op::Minus)),
                     &"×" => self.tokens.push(Token::Operator(Op::Times)),
+                    &"÷" => self.tokens.push(Token::Operator(Op::Divide)),
                     &" " => {}
                     _ => {
                         println!("unknown character `{}`", c);

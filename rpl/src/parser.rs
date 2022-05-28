@@ -2,7 +2,7 @@ use crate::scanner::{Op, Token};
 use std::fmt;
 
 pub enum Expr<'a> {
-    Number(i32),
+    Number(Vec<i32>),
     Diadic {
         left: Box<Expr<'a>>,
         infix: &'a Op,
@@ -13,7 +13,7 @@ pub enum Expr<'a> {
 impl<'a> fmt::Display for Expr<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Expr::Number(value) => write!(f, "{}", value),
+            Expr::Number(value) => write!(f, "{:?}", value),
             Expr::Diadic { left, infix, right } => write!(f, "({} {} {})", left, infix, right),
         }
     }
@@ -39,44 +39,35 @@ impl Parser {
     }
 
     fn p(&self, index: &mut usize) -> Result<Expr, &'static str> {
-        let tok = self.consume_token(index);
+        let mut array: Vec<i32> = vec![];
 
-        if let Some(&Token::Number(n)) = tok {
-            let num = Expr::Number(n);
-
-            if *index == self.tokens.len() {
-                return Ok(num);
-            }
-
-            let infix = self.tokens.get(*index);
+        while let Some(&Token::Number(n)) = self.tokens.get(*index) {
+            array.push(n);
             *index += 1;
+        }
 
+        if *index == self.tokens.len() {
+            return Ok(Expr::Number(array));
+        }
+
+        let infix = self.tokens.get(*index);
+
+        if let Some(infix) = infix {
+            *index += 1;
             match infix {
-                Some(infix) => match infix {
-                    Token::Operator(op) => {
-                        let right = self.p(index);
-                        match right {
-                            Ok(right) => Ok(Expr::Diadic {
-                                left: Box::new(num),
-                                infix: op,
-                                right: Box::new(right),
-                            }),
-                            Err(right) => Err(right),
-                        }
-                    }
-                    _ => Err("expected operator"),
+                Token::Operator(op) => match self.p(index) {
+                    Ok(right) => Ok(Expr::Diadic {
+                        left: Box::new(Expr::Number(array)),
+                        infix: op,
+                        right: Box::new(right),
+                    }),
+                    Err(e) => Err(e),
                 },
-                None => Err("expected infix operator"),
+                Token::Number(_) => Err("expected infix operator, saw number"),
             }
         } else {
-            return Err("expected number");
+            Err("expected infix operator")
         }
-    }
-
-    fn consume_token(&self, index: &mut usize) -> Option<&Token> {
-        let token = self.tokens.get(*index);
-        *index += 1;
-        token
     }
 }
 

@@ -6,16 +6,21 @@ use parser::Parser;
 use scanner::Scanner;
 
 pub fn main() {
-    let source = "12 × 3 + 1";
+    let source = "1 2 3 × 4 5 6";
 
     let mut scanner = Scanner::new(source);
     scanner.tokenize();
 
     let parser = Parser::new(scanner.tokens);
 
-    if let Ok(tree) = parser.parse() {
-        println!("> {}", tree);
-        let result = interpret(tree);
-        println!("{}", result)
+    match parser.parse() {
+        Ok(tree) => {
+            println!("> {}", tree);
+            let result = interpret(tree);
+            println!("{:?}", result)
+        }
+        Err(e) => {
+            println!("{}", e);
+        }
     }
 }

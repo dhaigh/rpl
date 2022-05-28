@@ -6,7 +6,7 @@ use parser::Parser;
 use scanner::Scanner;
 
 pub fn main() {
-    let source = "1 2 3 × 4 5 6";
+    let source = "/3 4 3 1 ⊣ 3 ⊢ 11 ⌈ 5 3 2 ";
 
     let mut scanner = Scanner::new(source);
     scanner.tokenize();

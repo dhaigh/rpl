@@ -21,16 +21,30 @@ pub enum Op {
     Minus,
     Times,
     Divide,
+    Floor,
+    Ceil,
+    LeftTack,
+    RightTack,
+    Replicate,
 }
 
 impl fmt::Display for Op {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            Op::Plus => write!(f, "+"),
-            Op::Minus => write!(f, "+"),
-            Op::Times => write!(f, "×"),
-            Op::Divide => write!(f, "÷"),
-        }
+        write!(
+            f,
+            "{}",
+            match *self {
+                Op::Plus => "+",
+                Op::Minus => "-",
+                Op::Times => "×",
+                Op::Divide => "÷",
+                Op::Floor => "⌊",
+                Op::Ceil => "⌈",
+                Op::LeftTack => "⊣",
+                Op::RightTack => "⊢",
+                Op::Replicate => "/",
+            }
+        )
     }
 }
 
@@ -75,6 +89,11 @@ impl<'a> Scanner<'a> {
                     &"-" => self.tokens.push(Token::Operator(Op::Minus)),
                     &"×" => self.tokens.push(Token::Operator(Op::Times)),
                     &"÷" => self.tokens.push(Token::Operator(Op::Divide)),
+                    &"⌊" => self.tokens.push(Token::Operator(Op::Floor)),
+                    &"⌈" => self.tokens.push(Token::Operator(Op::Ceil)),
+                    &"⊣" => self.tokens.push(Token::Operator(Op::LeftTack)),
+                    &"⊢" => self.tokens.push(Token::Operator(Op::RightTack)),
+                    &"/" => self.tokens.push(Token::Operator(Op::Replicate)),
                     &" " => {}
                     _ => {
                         println!("unknown character `{}`", c);

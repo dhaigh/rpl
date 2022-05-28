@@ -16,20 +16,32 @@ fn is_number(string: &str) -> bool {
     false
 }
 
-pub enum Token {
-    Number(i32),
+pub enum Op {
     Plus,
     Minus,
     Times,
 }
 
-impl fmt::Display for Token {
+impl fmt::Display for Op {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
+            Op::Plus => write!(f, "+"),
+            Op::Minus => write!(f, "+"),
+            Op::Times => write!(f, "×"),
+        }
+    }
+}
+
+pub enum Token {
+    Number(i32),
+    Operator(Op),
+}
+
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
             Token::Number(value) => write!(f, "{}", value),
-            Token::Plus => write!(f, "+"),
-            Token::Minus => write!(f, "-"),
-            Token::Times => write!(f, "×"),
+            Token::Operator(op) => write!(f, "{}", op),
         }
     }
 }
@@ -57,9 +69,9 @@ impl<'a> Scanner<'a> {
                 self.consume_number();
             } else {
                 match c {
-                    &"+" => self.tokens.push(Token::Plus),
-                    &"-" => self.tokens.push(Token::Minus),
-                    &"×" => self.tokens.push(Token::Times),
+                    &"+" => self.tokens.push(Token::Operator(Op::Plus)),
+                    &"-" => self.tokens.push(Token::Operator(Op::Minus)),
+                    &"×" => self.tokens.push(Token::Operator(Op::Times)),
                     &" " => {}
                     _ => {
                         println!("unknown character `{}`", c);

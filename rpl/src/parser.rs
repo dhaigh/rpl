@@ -1,11 +1,11 @@
-use crate::scanner::Token;
+use crate::scanner::{Op, Token};
 use std::fmt;
 
 pub enum Expr<'a> {
     Number(i32),
     Diadic {
         left: Box<Expr<'a>>,
-        infix: &'a Token,
+        infix: &'a Op,
         right: Box<Expr<'a>>,
     },
 }
@@ -52,17 +52,20 @@ impl Parser {
             *index += 1;
 
             match infix {
-                Some(infix) => {
-                    let right = self.p(index);
-                    match right {
-                        Ok(right) => Ok(Expr::Diadic {
-                            left: Box::new(num),
-                            infix: infix,
-                            right: Box::new(right),
-                        }),
-                        Err(right) => Err(right),
+                Some(infix) => match infix {
+                    Token::Operator(op) => {
+                        let right = self.p(index);
+                        match right {
+                            Ok(right) => Ok(Expr::Diadic {
+                                left: Box::new(num),
+                                infix: op,
+                                right: Box::new(right),
+                            }),
+                            Err(right) => Err(right),
+                        }
                     }
-                }
+                    _ => Err("expected operator"),
+                },
                 None => Err("expected infix operator"),
             }
         } else {

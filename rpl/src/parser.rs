@@ -1,35 +1,20 @@
-use crate::scanner::{Scanner, Token};
+use crate::scanner::Token;
+use std::fmt;
 
-struct Expr {
-    num: Option<i32>,
-    diadic: Option<Box<Diadic>>,
+pub enum Expr<'a> {
+    Number(i32),
+    Diadic {
+        left: Box<Expr<'a>>,
+        infix: &'a Token,
+        right: Box<Expr<'a>>,
+    },
 }
 
-pub struct Diadic {
-    pub left: Expr,
-    pub infix: Token,
-    pub right: Expr,
-}
-
-impl Diadic {
-    pub fn new(left: Expr, infix: Token, right: Expr) -> Self {
-        Self { left, infix, right }
-    }
-}
-
-impl Expr {
-    pub fn new_num(num: i32) -> Self {
-        Self {
-            num: Some(num),
-            diadic: None,
-        }
-    }
-
-    pub fn new_diadic(left: Expr, infix: Token, right: Expr) -> Self {
-        let diadic = Diadic::new(left, infix, right);
-        Self {
-            num: None,
-            diadic: Some(Box::new(diadic)),
+impl<'a> fmt::Display for Expr<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Expr::Number(value) => write!(f, "{}", value),
+            Expr::Diadic { left, infix, right } => write!(f, "({} {} {})", left, infix, right),
         }
     }
 }
@@ -40,26 +25,41 @@ impl Expr {
  */
 
 pub struct Parser {
-    pub index: usize,
     pub tokens: Vec<Token>,
 }
 
 impl Parser {
     pub fn new(tokens: Vec<Token>) -> Self {
-        Self { index: 0, tokens }
+        Self { tokens }
     }
 
-    pub fn parse(&mut self) -> Result<Expr, &'static str> {
-        let tok = self.consume_token();
+    pub fn parse(&self) -> Result<Expr, &'static str> {
+        let mut index: usize = 0;
+        return self.p(&mut index);
+    }
+
+    fn p(&self, index: &mut usize) -> Result<Expr, &'static str> {
+        let tok = self.consume_token(index);
+
         if let Some(&Token::Number(n)) = tok {
-            let num = Expr::new_num(n);
-            let infix = self.consume_token();
+            let num = Expr::Number(n);
+
+            if *index == self.tokens.len() {
+                return Ok(num);
+            }
+
+            let infix = self.tokens.get(*index);
+            *index += 1;
 
             match infix {
                 Some(infix) => {
-                    let right = self.parse();
+                    let right = self.p(index);
                     match right {
-                        Ok(right) => Ok(Expr::new_diadic(num, infix, right)),
+                        Ok(right) => Ok(Expr::Diadic {
+                            left: Box::new(num),
+                            infix: infix,
+                            right: Box::new(right),
+                        }),
                         Err(right) => Err(right),
                     }
                 }
@@ -70,17 +70,17 @@ impl Parser {
         }
     }
 
-    fn consume_token(&mut self) -> Option<&Token> {
-        let token = self.tokens.get(self.index);
-        self.index += 1;
+    fn consume_token(&self, index: &mut usize) -> Option<&Token> {
+        let token = self.tokens.get(*index);
+        *index += 1;
         token
     }
 }
 
-pub fn parse(source: &str) -> &str {
-    let mut scanner = Scanner::new(source);
-    scanner.tokenize();
-    let mut parser = Parser::new(scanner.tokens);
-    parser.parse();
-    return "hello";
-}
+// pub fn parse(source: &str) -> Result<Expr, &'static str> {
+//     let mut scanner = Scanner::new(source);
+//     scanner.tokenize();
+
+//     let parser = Parser::new(scanner.tokens);
+//     return parser.parse();
+// }

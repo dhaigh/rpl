@@ -6,15 +6,20 @@ fn is_number(string: &str) -> bool {
         return false;
     }
 
-    return match string.chars().next() {
-        Some(c) => '0' <= c && c <= '9',
-        _ => false,
-    };
+    if let Some(char) = string.chars().next() {
+        return match char {
+            '0'..='9' => true,
+            _ => false,
+        };
+    }
+
+    false
 }
 
 pub enum Token {
     Number(i32),
     Plus,
+    Minus,
     Times,
 }
 
@@ -23,6 +28,7 @@ impl fmt::Display for Token {
         match *self {
             Token::Number(value) => write!(f, "{}", value),
             Token::Plus => write!(f, "+"),
+            Token::Minus => write!(f, "-"),
             Token::Times => write!(f, "×"),
         }
     }
@@ -52,6 +58,7 @@ impl<'a> Scanner<'a> {
             } else {
                 match c {
                     &"+" => self.tokens.push(Token::Plus),
+                    &"-" => self.tokens.push(Token::Minus),
                     &"×" => self.tokens.push(Token::Times),
                     &" " => {}
                     _ => {

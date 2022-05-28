@@ -46,28 +46,31 @@ impl Parser {
             *index += 1;
         }
 
-        if *index == self.tokens.len() {
-            return Ok(Expr::Number(array));
-        }
+        let mut expr: Result<Expr, &'static str> = Ok(Expr::Number(array));
 
-        let infix = self.tokens.get(*index);
-
-        if let Some(infix) = infix {
+        while let Some(token) = self.tokens.get(*index) {
             *index += 1;
-            match infix {
-                Token::Operator(op) => match self.p(index) {
-                    Ok(right) => Ok(Expr::Diadic {
-                        left: Box::new(Expr::Number(array)),
-                        infix: op,
-                        right: Box::new(right),
-                    }),
+            expr = match token {
+                Token::Operator(infix) => match self.p(index) {
+                    Ok(right) => match expr {
+                        Ok(expr) => Ok(Expr::Diadic {
+                            left: Box::new(expr),
+                            infix,
+                            right: Box::new(right),
+                        }),
+                        Err(e) => Err(e),
+                    },
                     Err(e) => Err(e),
                 },
                 Token::Number(_) => Err("expected infix operator, saw number"),
+                Token::LeftParen => self.p(index),
+                Token::RightParen => {
+                    return expr;
+                }
             }
-        } else {
-            Err("expected infix operator")
         }
+
+        expr
     }
 }
 

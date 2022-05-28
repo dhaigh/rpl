@@ -51,6 +51,8 @@ impl fmt::Display for Op {
 pub enum Token {
     Number(i32),
     Operator(Op),
+    LeftParen,
+    RightParen,
 }
 
 impl fmt::Display for Token {
@@ -58,6 +60,8 @@ impl fmt::Display for Token {
         match self {
             Token::Number(value) => write!(f, "{}", value),
             Token::Operator(op) => write!(f, "{}", op),
+            Token::LeftParen => write!(f, "("),
+            Token::RightParen => write!(f, ")"),
         }
     }
 }
@@ -85,6 +89,7 @@ impl<'a> Scanner<'a> {
                 self.consume_number();
             } else {
                 match c {
+                    &" " => {}
                     &"+" => self.tokens.push(Token::Operator(Op::Plus)),
                     &"-" => self.tokens.push(Token::Operator(Op::Minus)),
                     &"×" => self.tokens.push(Token::Operator(Op::Times)),
@@ -94,7 +99,8 @@ impl<'a> Scanner<'a> {
                     &"⊣" => self.tokens.push(Token::Operator(Op::LeftTack)),
                     &"⊢" => self.tokens.push(Token::Operator(Op::RightTack)),
                     &"/" => self.tokens.push(Token::Operator(Op::Replicate)),
-                    &" " => {}
+                    &"(" => self.tokens.push(Token::LeftParen),
+                    &")" => self.tokens.push(Token::RightParen),
                     _ => {
                         println!("unknown character `{}`", c);
                     }

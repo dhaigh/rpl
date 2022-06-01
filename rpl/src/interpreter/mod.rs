@@ -1,3 +1,4 @@
 pub mod interp;
-pub mod parser;
-pub mod scanner;
+mod parser;
+mod scanner;
+mod test;

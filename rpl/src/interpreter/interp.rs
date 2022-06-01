@@ -1,26 +1,24 @@
 use super::parser::{Expr, Parser};
 use super::scanner::{Op, Scanner};
 
-enum Tack {
-    Left,
-    Right,
-}
-
-fn entrywise(left: Vec<i32>, right: Vec<i32>) -> impl Fn(fn(i32, i32) -> i32) -> Vec<i32> {
+fn entrywise(
+    left: Vec<i32>,
+    right: Vec<i32>,
+) -> impl Fn(fn(i32, i32) -> i32, fn(i32) -> i32) -> Vec<i32> {
     let l = left.len();
     let r = right.len();
 
-    return move |func| match (l, r) {
-        (0, _) => right.clone(),
-        (_, 0) => left.clone(),
-        (1, _) => right.iter().map(|x| func(left[0], *x)).collect(),
-        (_, 1) => left.iter().map(|x| func(right[0], *x)).collect(),
+    return move |diadic, monadic| match (l, r) {
+        (0, _) => right.iter().map(|x| monadic(*x)).collect(),
+        (_, 0) => left.iter().map(|x| monadic(*x)).collect(),
+        (1, _) => right.iter().map(|x| diadic(left[0], *x)).collect(),
+        (_, 1) => left.iter().map(|x| diadic(*x, right[0])).collect(),
         _ => {
             if l == r {
                 return left
                     .iter()
                     .zip(right.iter())
-                    .map(|(a, b)| func(*a, *b))
+                    .map(|(a, b)| diadic(*a, *b))
                     .collect();
             } else {
                 panic!("mismatching arg length ({}, {})", l, r);
@@ -30,27 +28,32 @@ fn entrywise(left: Vec<i32>, right: Vec<i32>) -> impl Fn(fn(i32, i32) -> i32) ->
 }
 
 fn plus(left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
-    entrywise(left, right)(|l, r| l + r)
+    entrywise(left, right)(|l, r| l + r, |x| x)
 }
 
 fn minus(left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
-    entrywise(left, right)(|l, r| l - r)
+    entrywise(left, right)(|l, r| l - r, |x| -x)
 }
 
 fn times(left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
-    entrywise(left, right)(|l, r| l * r)
+    entrywise(left, right)(|l, r| l * r, |x| x)
 }
 
 fn divide(left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
-    entrywise(left, right)(|l, r| l / r)
+    entrywise(left, right)(|l, r| l / r, |x| x)
 }
 
 fn ceil(left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
-    entrywise(left, right)(|l, r| if l > r { l } else { r })
+    entrywise(left, right)(|l, r| if l > r { l } else { r }, |x| x)
 }
 
 fn floor(left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
-    entrywise(left, right)(|l, r| if l < r { l } else { r })
+    entrywise(left, right)(|l, r| if l < r { l } else { r }, |x| x)
+}
+
+enum Tack {
+    Left,
+    Right,
 }
 
 fn tack(side: Tack, left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {

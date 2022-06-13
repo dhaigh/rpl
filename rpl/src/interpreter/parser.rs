@@ -1,8 +1,10 @@
 use super::scanner::{Op, Token};
 use std::fmt;
 
+pub type Array = Vec<f64>;
+
 pub enum Expr<'a> {
-    Number(Vec<i32>),
+    Number(Array),
     Diadic {
         left: Box<Expr<'a>>,
         infix: &'a Op,
@@ -39,7 +41,7 @@ impl Parser {
     }
 
     fn p(&self, index: &mut usize) -> Result<Expr, &'static str> {
-        let mut array: Vec<i32> = vec![];
+        let mut array: Array = vec![];
 
         while let Some(&Token::Number(n)) = self.tokens.get(*index) {
             array.push(n);

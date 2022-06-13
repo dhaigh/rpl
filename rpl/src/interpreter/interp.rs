@@ -1,16 +1,12 @@
-use super::parser::{Expr, Parser};
+use super::parser::{Array, Expr, Parser};
 use super::scanner::{Op, Scanner};
 
-fn entrywise(
-    left: Vec<i32>,
-    right: Vec<i32>,
-) -> impl Fn(fn(i32, i32) -> i32, fn(i32) -> i32) -> Vec<i32> {
+fn entrywise(left: Array, right: Array) -> impl Fn(fn(f64, f64) -> f64, fn(f64) -> f64) -> Array {
     let l = left.len();
     let r = right.len();
 
     return move |diadic, monadic| match (l, r) {
         (0, _) => right.iter().map(|x| monadic(*x)).collect(),
-        (_, 0) => left.iter().map(|x| monadic(*x)).collect(),
         (1, _) => right.iter().map(|x| diadic(left[0], *x)).collect(),
         (_, 1) => left.iter().map(|x| diadic(*x, right[0])).collect(),
         _ => {
@@ -27,27 +23,27 @@ fn entrywise(
     };
 }
 
-fn plus(left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
+fn plus(left: Array, right: Array) -> Array {
     entrywise(left, right)(|l, r| l + r, |x| x)
 }
 
-fn minus(left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
+fn minus(left: Array, right: Array) -> Array {
     entrywise(left, right)(|l, r| l - r, |x| -x)
 }
 
-fn times(left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
+fn times(left: Array, right: Array) -> Array {
     entrywise(left, right)(|l, r| l * r, |x| x)
 }
 
-fn divide(left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
+fn divide(left: Array, right: Array) -> Array {
     entrywise(left, right)(|l, r| l / r, |x| x)
 }
 
-fn ceil(left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
+fn ceil(left: Array, right: Array) -> Array {
     entrywise(left, right)(|l, r| if l > r { l } else { r }, |x| x)
 }
 
-fn floor(left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
+fn floor(left: Array, right: Array) -> Array {
     entrywise(left, right)(|l, r| if l < r { l } else { r }, |x| x)
 }
 
@@ -56,7 +52,7 @@ enum Tack {
     Right,
 }
 
-fn tack(side: Tack, left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
+fn tack(side: Tack, left: Array, right: Array) -> Array {
     if left.len() == 0 {
         return right;
     }
@@ -67,12 +63,12 @@ fn tack(side: Tack, left: Vec<i32>, right: Vec<i32>) -> Vec<i32> {
     }
 }
 
-fn replicate(_left: Vec<i32>, _right: Vec<i32>) -> Vec<i32> {
+fn replicate(_left: Array, _right: Array) -> Array {
     // todo
     return vec![];
 }
 
-pub fn eval(expr: Expr) -> Vec<i32> {
+pub fn eval(expr: Expr) -> Array {
     match expr {
         Expr::Number(value) => value,
         Expr::Diadic { left, infix, right } => {
@@ -98,7 +94,7 @@ pub fn eval(expr: Expr) -> Vec<i32> {
     }
 }
 
-pub fn eval_source(source: &str) -> Result<Vec<i32>, &'static str> {
+pub fn eval_source(source: &str) -> Result<Array, &'static str> {
     let mut scanner = Scanner::new(source);
     scanner.tokenize();
 

@@ -49,7 +49,7 @@ impl fmt::Display for Op {
 }
 
 pub enum Token {
-    Number(i32),
+    Number(f64),
     Operator(Op),
     LeftParen,
     RightParen,
@@ -126,7 +126,7 @@ impl<'a> Scanner<'a> {
             s.push_str(self.graphemes[i]);
         }
 
-        match s.parse::<i32>() {
+        match s.parse::<f64>() {
             Ok(n) => {
                 let num = Token::Number(n);
                 self.tokens.push(num);

@@ -1,7 +1,10 @@
-use super::parser::{Array, Expr, Parser};
+use super::parser::{Array, Expr, Num, Parser};
 use super::scanner::{Op, Scanner};
 
-fn entrywise(left: Array, right: Array) -> impl Fn(fn(f64, f64) -> f64, fn(f64) -> f64) -> Array {
+type Monadic = fn(Num) -> Num;
+type Diadic = fn(Num, Num) -> Num;
+
+fn entrywise(left: Array, right: Array) -> impl Fn(Diadic, Monadic) -> Array {
     let l = left.len();
     let r = right.len();
 

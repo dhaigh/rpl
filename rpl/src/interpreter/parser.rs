@@ -1,7 +1,8 @@
 use super::scanner::{Op, Token};
 use std::fmt;
 
-pub type Array = Vec<f64>;
+pub type Num = f64;
+pub type Array = Vec<Num>;
 
 pub enum Expr<'a> {
     Number(Array),
@@ -43,8 +44,15 @@ impl Parser {
     fn p(&self, index: &mut usize) -> Result<Expr, &'static str> {
         let mut array: Array = vec![];
 
-        while let Some(&Token::Number(n)) = self.tokens.get(*index) {
-            array.push(n);
+        while let Some(Token::Number(n)) = self.tokens.get(*index) {
+            match n.parse::<Num>() {
+                Ok(n) => {
+                    array.push(n);
+                }
+                Err(_) => {
+                    return Err("couldn't parse float for some reason");
+                }
+            }
             *index += 1;
         }
 

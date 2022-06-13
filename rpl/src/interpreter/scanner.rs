@@ -49,7 +49,7 @@ impl fmt::Display for Op {
 }
 
 pub enum Token {
-    Number(f64),
+    Number(String),
     Operator(Op),
     LeftParen,
     RightParen,
@@ -126,15 +126,7 @@ impl<'a> Scanner<'a> {
             s.push_str(self.graphemes[i]);
         }
 
-        match s.parse::<f64>() {
-            Ok(n) => {
-                let num = Token::Number(n);
-                self.tokens.push(num);
-            }
-            Err(e) => {
-                println!("{}", e);
-            }
-        }
+        self.tokens.push(Token::Number(s));
     }
 
     fn current_grapheme(&self) -> Option<&&str> {

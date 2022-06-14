@@ -74,6 +74,7 @@ fn replicate(_left: Array, _right: Array) -> Array {
 pub fn eval(expr: Expr) -> Array {
     match expr {
         Expr::Number(value) => value,
+        Expr::Negative(value) => times(eval(*value), vec![-1]),
         Expr::Diadic { left, infix, right } => {
             let l = eval(*left);
             let r = eval(*right);

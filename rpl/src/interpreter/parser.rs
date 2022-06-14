@@ -1,11 +1,12 @@
 use super::scanner::{Op, Token};
 use std::fmt;
 
-pub type Num = f64;
+pub type Num = i64;
 pub type Array = Vec<Num>;
 
 pub enum Expr<'a> {
     Number(Array),
+    Negative(Box<Expr<'a>>),
     Diadic {
         left: Box<Expr<'a>>,
         infix: &'a Op,
@@ -17,6 +18,7 @@ impl<'a> fmt::Display for Expr<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Expr::Number(value) => write!(f, "{:?}", value),
+            Expr::Negative(value) => write!(f, "¯{}", value),
             Expr::Diadic { left, infix, right } => write!(f, "({} {} {})", left, infix, right),
         }
     }
@@ -44,16 +46,29 @@ impl Parser {
     fn p(&self, index: &mut usize) -> Result<Expr, &'static str> {
         let mut array: Array = vec![];
 
-        while let Some(Token::Number(n)) = self.tokens.get(*index) {
-            match n.parse::<Num>() {
-                Ok(n) => {
-                    array.push(n);
+        while let Some(token) = self.tokens.get(*index) {
+            match token {
+                Token::Number(string) => {
+                    if let Ok(num) = string.parse::<Num>() {
+                        array.push(num);
+                        *index += 1;
+                    } else {
+                        return Err("couldn't parse number");
+                    }
                 }
-                Err(_) => {
-                    return Err("couldn't parse float for some reason");
+                Token::HighMinus => {
+                    *index += 1;
+                    let expr = self.p(index);
+                    if let Ok(expr) = expr {
+                        return Ok(Expr::Negative(Box::new(expr)));
+                    } else {
+                        return expr;
+                    }
+                }
+                _ => {
+                    break;
                 }
             }
-            *index += 1;
         }
 
         let mut expr: Result<Expr, &'static str> = Ok(Expr::Number(array));
@@ -72,11 +87,11 @@ impl Parser {
                     },
                     Err(e) => Err(e),
                 },
-                Token::Number(_) => Err("unexpected number"),
                 Token::LeftParen => self.p(index),
                 Token::RightParen => {
                     return expr;
                 }
+                _ => Err("unexpected token"),
             }
         }
 

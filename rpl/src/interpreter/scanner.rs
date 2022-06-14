@@ -50,7 +50,8 @@ impl fmt::Display for Op {
 
 pub enum Token {
     Number(String),
-    Operator(Op),
+    HighMinus,
+    Operator(Op), // todo: rename to function
     LeftParen,
     RightParen,
 }
@@ -58,6 +59,7 @@ pub enum Token {
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            Token::HighMinus => write!(f, "¯"),
             Token::Number(value) => write!(f, "{}", value),
             Token::Operator(op) => write!(f, "{}", op),
             Token::LeftParen => write!(f, "("),
@@ -90,6 +92,7 @@ impl<'a> Scanner<'a> {
             } else {
                 match c {
                     &" " => {}
+                    &"¯" => self.tokens.push(Token::HighMinus),
                     &"+" => self.tokens.push(Token::Operator(Op::Plus)),
                     &"-" => self.tokens.push(Token::Operator(Op::Minus)),
                     &"×" => self.tokens.push(Token::Operator(Op::Times)),

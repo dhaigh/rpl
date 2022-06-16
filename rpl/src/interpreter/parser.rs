@@ -6,7 +6,7 @@ pub type Array = Vec<Num>;
 
 pub enum Expr<'a> {
     Number(Array),
-    Negative(Box<Expr<'a>>),
+    // Negative(Box<Expr<'a>>),
     Diadic {
         left: Box<Expr<'a>>,
         infix: &'a Op,
@@ -18,7 +18,7 @@ impl<'a> fmt::Display for Expr<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Expr::Number(value) => write!(f, "{:?}", value),
-            Expr::Negative(value) => write!(f, "¯{}", value),
+            // Expr::Negative(value) => write!(f, "¯{}", value),
             Expr::Diadic { left, infix, right } => write!(f, "({} {} {})", left, infix, right),
         }
     }
@@ -58,11 +58,20 @@ impl Parser {
                 }
                 Token::HighMinus => {
                     *index += 1;
-                    let expr = self.p(index);
-                    if let Ok(expr) = expr {
-                        return Ok(Expr::Negative(Box::new(expr)));
-                    } else {
-                        return expr;
+                    if let Some(next_token) = self.tokens.get(*index) {
+                        match next_token {
+                            Token::Number(string) => {
+                                if let Ok(num) = string.parse::<Num>() {
+                                    array.push(-num);
+                                    *index += 1;
+                                } else {
+                                    return Err("couldn't parse number");
+                                }
+                            }
+                            _ => {
+                                return Err("expected token after high minus");
+                            }
+                        }
                     }
                 }
                 _ => {

@@ -48,5 +48,5 @@ fn test_minus() {
 fn test_high_minus() {
     assert_eq!("1 + ¯1", vec![0]);
     assert_eq!("1 ¯1 + ¯1 1", vec![0, 0]);
-    assert_eq!("¯(1 - 1) + 2 3", vec![0, -1, -2]);
+    assert_eq!("¯10 3 5 + ¯5", vec![-15, -2, 0]);
 }
